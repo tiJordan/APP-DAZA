@@ -1,5 +1,5 @@
 // Home.js
-import React, { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     View,
     Text,
@@ -25,30 +25,16 @@ const Home = () => {
     //};
 
     const handleLoginSimulado = () => {
-        useEffect(() => {
-            if (navigation) {
-                console.log('Rotas disponíveis:', navigation.getState().routeNames);
-            }
-        }, [navigation]);
-
-        if (__DEV__) { // Apenas para ambiente de desenvolvimento
-            console.log('Navegando para:', navigation.getState());
-        }
-        
         setIsLoading(true);
-        // Simula delay de API
         setTimeout(() => {
             setIsLoading(false);
-            if (usuario.toLowerCase() === 'admin' && senha === '1234') { // Credenciais teste
+            // Mantenha apenas UMA verificação:
+            if (usuario.toLowerCase() === 'admin' && senha === '1234') {
                 navigation.navigate('MainApp');
+            } else if (!usuario || !senha) {
+                Alert.alert('Erro', 'Preencha todos os campos!');
             } else {
                 Alert.alert('Erro', 'Credenciais inválidas!');
-            }
-            // Verificação simples para demonstração
-            if (usuario && senha) {
-                navigation.navigate('MainApp');
-            } else {
-                Alert.alert('Erro', 'Preencha todos os campos!');
             }
         }, 1500);
     };
@@ -110,7 +96,7 @@ const Home = () => {
                     {/* Botão Entrar */}
                     <TouchableOpacity
                         style={[loginStyles.botaoEntrar,
-                        isLoading && { backgroundColor: '1a2d5a90' }
+                        isLoading && { backgroundColor: '#1a2d5a90' }
                         ]}
                         onPress={handleLoginSimulado}
                         //activeOpacity={0.8}

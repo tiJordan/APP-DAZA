@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Estatisticas from './Estatisticas';
 import Calendario from './Calendario'
-import Jogos from './Jogos';
+import Jogadores from './Jogadores';
 import Videos from './Videos';
 
 const Tab = createBottomTabNavigator();
@@ -18,8 +18,8 @@ const MainTabs = () => {
                         iconName = focused ? 'stats-chart' : 'stats-chart-outline';
                     } else if (route.name === 'Calendario') {
                         iconName = focused ? 'calendar' : 'calendar-outline';
-                    } else if (route.name === 'Jogos') {
-                        iconName = focused ? 'trophy' : 'trophy-outline';
+                    } else if (route.name === 'Jogadores') {
+                        iconName = focused ? 'shirt' : 'shirt-outline';
                     } else if (route.name === 'Videos') {
                         iconName = focused ? 'play-circle' : 'play-circle-outline';
                     }
@@ -28,12 +28,13 @@ const MainTabs = () => {
                 },
                 tabBarActiveTintColor: '#1A2D5A',
                 tabBarInactiveTintColor: 'gray',
-                headerShown: false
+                headerShown: false,
+
             })}
         >
             <Tab.Screen name="Estatisticas" component={Estatisticas} />
             <Tab.Screen name="Calendario" component={Calendario} />
-            <Tab.Screen name="Jogos" component={Jogos} />
+            <Tab.Screen name="Jogadores" component={Jogadores} />
             <Tab.Screen name="Videos" component={Videos} />
         </Tab.Navigator>
     );

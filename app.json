@@ -3,6 +3,7 @@
     "name": "APP-DAZA",
     "slug": "APP-DAZA",
     "version": "1.0.0",
+    "main": "node_modules/expo/AppEntry.js",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -32,7 +33,6 @@
             "fonts": [
               "./assets/fonts/Inter-Black.otf",
               "./assets/fonts/SemiBold.otf"
-
             ]
           }
         ]

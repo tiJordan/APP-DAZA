@@ -1,10 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { videos_styles } from '../assets/css/Css_videos';
 
 const Videos = () => {
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Vídeos</Text>
+        <View style={videos_styles.container}>
+            <Text style={videos_styles.titulo}>Vídeos</Text>
             {/* Conteúdo da tela */}
         </View>
     );

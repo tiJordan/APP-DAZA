@@ -1,27 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { calendar_styles } from '../assets/css/Css_calendario';
 
 const Calendario = () => {
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>Calendário</Text>
+        <View style={calendar_styles.container}>
+            <Text style={calendar_styles.titulo}>Calendário</Text>
             {/* Conteúdo da tela */}
         </View>
     );
 };
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#F5F5F5',
-        padding: 20
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: '#1A2D5A',
-        marginBottom: 20
-    }
-});
 
 export default Calendario;

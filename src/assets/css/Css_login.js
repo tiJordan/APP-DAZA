@@ -55,13 +55,6 @@ export const loginStyles = StyleSheet.create({
         borderWidth: 2,
     },
     botaoEntrar: {
-        backgroundColor: '#1A2D5A',
-        borderRadius: 25,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 5,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -72,6 +65,13 @@ export const loginStyles = StyleSheet.create({
                 elevation: 3,
             },
         }),
+        backgroundColor: '#1A2D5A',
+        borderRadius: 25,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 5,
     },
     textoBotao: {
         color: 'white',
