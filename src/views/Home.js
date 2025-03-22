@@ -1,5 +1,5 @@
 // Home.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     View,
     Text,
@@ -7,17 +7,50 @@ import {
     TouchableOpacity,
     ImageBackground,
     Image,
-    Platform
+    Platform,
+    ActivityIndicator
 } from 'react-native';
 import { loginStyles } from '../assets/css/Css_login';
+import { useNavigation } from '@react-navigation/native';
 
 const Home = () => {
     const [usuario, setUsuario] = useState('');
     const [senha, setSenha] = useState('');
     const [inputFocado, setInputFocado] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const navigation = useNavigation();
 
-    const handleLogin = () => {
-        // Lógica de login aqui
+    //const handleLogin = () => {
+    //   navigation.navigate('MainApp')
+    //};
+
+    const handleLoginSimulado = () => {
+        useEffect(() => {
+            if (navigation) {
+                console.log('Rotas disponíveis:', navigation.getState().routeNames);
+            }
+        }, [navigation]);
+
+        if (__DEV__) { // Apenas para ambiente de desenvolvimento
+            console.log('Navegando para:', navigation.getState());
+        }
+        
+        setIsLoading(true);
+        // Simula delay de API
+        setTimeout(() => {
+            setIsLoading(false);
+            if (usuario.toLowerCase() === 'admin' && senha === '1234') { // Credenciais teste
+                navigation.navigate('MainApp');
+            } else {
+                Alert.alert('Erro', 'Credenciais inválidas!');
+            }
+            // Verificação simples para demonstração
+            if (usuario && senha) {
+                navigation.navigate('MainApp');
+            } else {
+                Alert.alert('Erro', 'Preencha todos os campos!');
+            }
+        }, 1500);
     };
 
     return (
@@ -76,11 +109,19 @@ const Home = () => {
 
                     {/* Botão Entrar */}
                     <TouchableOpacity
-                        style={loginStyles.botaoEntrar}
-                        onPress={handleLogin}
-                        activeOpacity={0.8}
+                        style={[loginStyles.botaoEntrar,
+                        isLoading && { backgroundColor: '1a2d5a90' }
+                        ]}
+                        onPress={handleLoginSimulado}
+                        //activeOpacity={0.8}
+                        disabled={isLoading}
                     >
-                        <Text style={loginStyles.textoBotao}>ENTRAR</Text>
+                        {isLoading ? (
+                            <ActivityIndicator color={"#FFF"} /> // Ícone de Loading
+                        ) : (
+                            <Text style={loginStyles.textoBotao}>ENTRAR</Text>
+                        )}
+
                     </TouchableOpacity>
 
                     {/* Links */}
@@ -89,7 +130,8 @@ const Home = () => {
                             <Text style={loginStyles.linkTexto}>Esqueci a senha</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigation.navigate('Cadastro')}>
+
                             <Text style={loginStyles.linkTexto}>Cadastrar</Text>
                         </TouchableOpacity>
                     </View>

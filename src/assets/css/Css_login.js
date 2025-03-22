@@ -28,6 +28,7 @@ export const loginStyles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         paddingHorizontal: 35,
+        paddingVertical: 270,
         paddingBottom: '260',
         marginBottom: Platform.OS === 'ios' ? 80 : 60,
     },
@@ -81,7 +82,7 @@ export const loginStyles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginTop: 20,
-        marginRight: 35,
+        marginRight: 40,
     },
     linkTexto: {
         color: '#1A2D5A',
@@ -102,6 +103,18 @@ export const loginStyles = StyleSheet.create({
                 borderBottomColor: '#1A2D5A',
                 paddingBottom: 2,
             },
+        }),
+    },
+    botaoCadastrar: {
+        backgroundColor: '#28a745', // Verde para diferenciar
+        borderRadius: 25,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 30,
+        ...Platform.select({
+            ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2 },
+            android: { elevation: 3 },
         }),
     },
 });
