@@ -44,17 +44,27 @@ export const loginStyles = StyleSheet.create({
     input: {
         height: 50,
         borderWidth: 1,
-        borderColor: '#CCCCCC',
+        borderColor: '#2A2A2A',
+        backgroundColor: '#FFFFFF',
         borderRadius: 8,
         paddingHorizontal: 15,
         fontSize: 16,
         backgroundColor: 'white',
     },
     inputFocado: {
-        borderColor: '#1A2D5A',
+        borderColor: '#FFD700',
         borderWidth: 2,
     },
     botaoEntrar: {
+        backgroundColor: '#FFD700',
+        borderWidth: 1,
+        borderColor: '#000000',
+        borderRadius: 25,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 5,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
@@ -65,13 +75,6 @@ export const loginStyles = StyleSheet.create({
                 elevation: 3,
             },
         }),
-        backgroundColor: '#1A2D5A',
-        borderRadius: 25,
-        height: 50,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 5,
     },
     textoBotao: {
         color: 'white',

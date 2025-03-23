@@ -1,5 +1,6 @@
 // Home.js
 import { useState } from 'react';
+import { Alert } from 'react-native'; 
 import {
     View,
     Text,
