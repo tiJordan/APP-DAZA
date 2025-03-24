@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ImageBackground, Image, Alert } from 'react-native';
 import { loginStyles } from '../assets/css/Css_login';
+import axios from 'axios';
+
+const api = axios.create({ baseURL: 'http://localhost:3008/api' });
 
 const Cadastro = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -81,7 +84,20 @@ const Cadastro = ({ navigation }) => {
                     {/* Botão Cadastrar */}
                     <TouchableOpacity
                         style={loginStyles.botaoEntrar}
-                        onPress={() => {/* Lógica de cadastro */ }}
+                        onPress={async () => {
+                            try {
+                                const response = await api.post('/auth/register', {
+                                    nome,
+                                    email,
+                                    senha
+                                });
+                                Alert.alert('Sucesso', 'Conta criada com sucesso!');
+                                navigation.goBack();
+                            } catch (error) {
+                                console.log('Erro no cadastro:', error.response?.data);
+                                Alert.alert('Erro', error.response?.data?.message || 'Erro ao Cadastrar');
+                            }
+                        }}
                         activeOpacity={0.8}
                     >
                         <Text style={loginStyles.textoBotao}>CRIAR CONTA</Text>
@@ -94,8 +110,8 @@ const Cadastro = ({ navigation }) => {
                         </TouchableOpacity>
                     </View>
                 </View>
-            </ImageBackground>
-        </View>
+            </ImageBackground >
+        </View >
     );
 };
 

@@ -1,6 +1,7 @@
 // Home.js
 import { useState } from 'react';
-import { Alert } from 'react-native'; 
+import { Alert } from 'react-native';
+import axios from 'axios';
 import {
     View,
     Text,
@@ -14,6 +15,11 @@ import {
 import { loginStyles } from '../assets/css/Css_login';
 import { useNavigation } from '@react-navigation/native';
 
+// Configurar axios
+const api = axios.create({
+    baseURL: 'http://192.168.0.141:3008/api' // Altere para seu IP em desenvolvimento mobile
+});
+
 const Home = () => {
     const [usuario, setUsuario] = useState('');
     const [senha, setSenha] = useState('');
@@ -21,24 +27,37 @@ const Home = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigation = useNavigation();
 
-    //const handleLogin = () => {
-    //   navigation.navigate('MainApp')
-    //};
+    const handleLogin = async () => {
+        try {
+            setIsLoading(true);
 
-    const handleLoginSimulado = () => {
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            // Mantenha apenas UMA verificação:
-            if (usuario.toLowerCase() === 'admin' && senha === '1234') {
-                navigation.navigate('MainApp');
-            } else if (!usuario || !senha) {
-                Alert.alert('Erro', 'Preencha todos os campos!');
-            } else {
-                Alert.alert('Erro', 'Credenciais inválidas!');
+            const response = await api.post('/auth/login', {
+                email: usuario,
+                senha
+            });
+
+            await AsyncStorage.setItem('@token', response.data.token);
+            navigation.navigate('MainApp');
+
+        } catch (error) {
+            let mensagem = 'Erro ao fazer login';
+            if (error.response) {
+                mensagem = error.response.data.message;
             }
-        }, 1500);
+            Alert.alert('Erro', mensagem);
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    // Adicionar interceptor para o token
+    api.interceptors.request.use(async (config) => {
+        const token = await AsyncStorage.getItem('@token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    });
 
     return (
         <View style={loginStyles.container}>
@@ -99,7 +118,7 @@ const Home = () => {
                         style={[loginStyles.botaoEntrar,
                         isLoading && { backgroundColor: '#1a2d5a90' }
                         ]}
-                        onPress={handleLoginSimulado}
+                        onPress={handleLogin}
                         //activeOpacity={0.8}
                         disabled={isLoading}
                     >

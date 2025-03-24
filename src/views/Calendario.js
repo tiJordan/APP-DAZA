@@ -51,10 +51,7 @@ const Calendario = () => {
             adversario: 'Time A',
             estadio: 'Estádio Municipal',
             horario: '19:30',
-            gols: [
-                { jogador: 'Jogador 1', minuto: '23', assistencia: 'Jogador 2' },
-                { jogador: 'Jogador 3', minuto: '67', assistencia: 'Jogador 4' }
-            ],
+            gols: [],
             cartoes: [
                 { jogador: 'Jogador 5', minuto: '45', tipo: 'amarelo' },
                 { jogador: 'Jogador 6', minuto: '89', tipo: 'vermelho' }
@@ -124,7 +121,7 @@ const Calendario = () => {
 
         setCurrentGame(existingGame);
         setSelectedDate(day.dateString);
-        setEditMode(!games[day.dateString]);
+        setEditMode(!games[day.dateString] && !isFuture);
         setModalVisible(true);
     };
 
@@ -179,12 +176,14 @@ const Calendario = () => {
             </View>
 
             <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                    style={[styles.button, styles.editButton]}
-                    onPress={renderGolForm()}
-                >
-                    <Text style={styles.buttonText}>Editar</Text>
-                </TouchableOpacity>
+                {currentGame.type === 'past' && (
+                    <TouchableOpacity
+                        style={[styles.button, styles.editButton]}
+                        onPress={() => setEditMode(true)}
+                    >
+                        <Text style={styles.buttonText}>Editar</Text>
+                    </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                     style={[styles.button, styles.deleteButton]}
@@ -233,6 +232,7 @@ const Calendario = () => {
             </View>
         );
     };
+    
     const renderEditForm = () => (
         <ScrollView>
             <View style={styles.detailsContainer}>
@@ -302,7 +302,7 @@ const Calendario = () => {
                     style={styles.addButton}
                     onPress={() => setCurrentGame(prev => ({
                         ...prev,
-                        cartoes: [...prev.cartoes, { jogador: '', minuto: ''}]
+                        cartoes: [...prev.cartoes, { jogador: '', minuto: '' }]
                     }))}
                 >
                     <Text style={styles.buttonText}>+ Adicionar Cartão</Text>
