@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
     View,
     Text,
@@ -30,9 +31,8 @@ const Home = () => {
     const handleLogin = async () => {
         try {
             setIsLoading(true);
-
             const response = await api.post('/auth/login', {
-                email: usuario,
+                email: usuario, // 👈 Certifique-se que "usuario" é o email
                 senha
             });
 
@@ -40,11 +40,8 @@ const Home = () => {
             navigation.navigate('MainApp');
 
         } catch (error) {
-            let mensagem = 'Erro ao fazer login';
-            if (error.response) {
-                mensagem = error.response.data.message;
-            }
-            Alert.alert('Erro', mensagem);
+            console.log('Erro detalhado:', error.response?.data || error.message); // 👈 Log completo
+            Alert.alert('Erro', error.response?.data?.message || 'Falha na conexão');
         } finally {
             setIsLoading(false);
         }

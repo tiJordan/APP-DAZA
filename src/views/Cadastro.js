@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, ImageBackground, Image, Alert 
 import { loginStyles } from '../assets/css/Css_login';
 import axios from 'axios';
 
-const api = axios.create({ baseURL: 'http://localhost:3008/api' });
+const api = axios.create({ baseURL: 'http://192.168.0.141:3008/api' });
 
 const Cadastro = ({ navigation }) => {
     const [nome, setNome] = useState('');
@@ -94,7 +94,8 @@ const Cadastro = ({ navigation }) => {
                                 Alert.alert('Sucesso', 'Conta criada com sucesso!');
                                 navigation.goBack();
                             } catch (error) {
-                                console.log('Erro no cadastro:', error.response?.data);
+                                console.log('Erro completo:', error);
+                                console.log('Resposta do erro:', error.response?.data);
                                 Alert.alert('Erro', error.response?.data?.message || 'Erro ao Cadastrar');
                             }
                         }}
