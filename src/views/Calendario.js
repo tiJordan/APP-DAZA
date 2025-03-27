@@ -1,241 +1,253 @@
 import React, { useState, useEffect } from 'react';
 import {
-    View,
-    Text,
-    Modal,
-    TouchableOpacity,
-    TextInput,
-    ScrollView,
-    SafeAreaView,
-    Alert
+    View, Text, Modal, TouchableOpacity,
+    TextInput, ScrollView, SafeAreaView, Alert
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { Calendar } from 'react-native-calendars';
 import { calendar_styles, calendar_styles as styles } from '../assets/css/Css_calendario';
+import axios from 'axios';
 
 const Calendario = () => {
+    const [games, setGames] = useState({});
     const [selectedDate, setSelectedDate] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
-    const [games, setGames] = useState({});
+    const [jogadores, setJogadores] = useState([]);
     const [currentGame, setCurrentGame] = useState({
-        type: 'past',
-        status: 'pending',
         adversario: '',
         estadio: '',
-        horario: ''
+        horario: '',
+        gols: [],
+        cartoes: []
     });
     const [editMode, setEditMode] = useState(false);
     // const [isFutureGame, setIsFutureGame] = useState(false);
 
+    useEffect(() => {
+        const fetchGames = async () => {
+            try {
+                const response = await axios.get('/api/jogos');
+                if (response.data.length === 0) {
+                    Alert.alert('Aviso', 'Nenhum jogo cadastrado ainda!')
+                }
+                const formattedGames = response.data.reduce((acc, game) => ({
+                    ...acc,
+                    [game.data]: {
+                        selected: true,
+                        selectedColor: getStatusColor(game.resultado),
+                        dotColor: '#FFF'
+                    }
+                }), {});
+                setGames(formattedGames);
+            } catch (error) {
+                console.error('Erro ao buscar jogos:', error);
+            }
+        };
+        fetchGames();
+    }, []);
 
-    // Dados mockados
-    const initialGames = {
-        '2025-03-15': {
-            type: 'past',
-            status: 'win',
-            adversario: 'Time A',
-            estadio: 'Estádio Municipal',
-            horario: '19:30',
-            gols: [
-                { jogador: 'Jogador 1', minuto: '23', assistencia: 'Jogador 2' },
-                { jogador: 'Jogador 3', minuto: '67', assistencia: 'Jogador 4' }
-            ],
-            cartoes: [
-                { jogador: 'Jogador 5', minuto: '45', tipo: 'amarelo' },
-                { jogador: 'Jogador 6', minuto: '89', tipo: 'vermelho' }
-            ]
-        },
-        '2025-03-10': {
-            type: 'past',
-            status: 'loss',
-            adversario: 'Time A',
-            estadio: 'Estádio Municipal',
-            horario: '19:30',
-            gols: [],
-            cartoes: [
-                { jogador: 'Jogador 5', minuto: '45', tipo: 'amarelo' },
-                { jogador: 'Jogador 6', minuto: '89', tipo: 'vermelho' }
-            ]
-        },
-        '2025-03-06': {
-            type: 'past',
-            status: 'draw',
-            adversario: 'Time A',
-            estadio: 'Estádio Municipal',
-            horario: '19:30',
-            gols: [
-                { jogador: 'Jogador 1', minuto: '23', assistencia: 'Jogador 2' },
-                { jogador: 'Jogador 3', minuto: '67', assistencia: 'Jogador 4' }
-            ],
-            cartoes: [
-                { jogador: 'Jogador 5', minuto: '45', tipo: 'amarelo' },
-                { jogador: 'Jogador 6', minuto: '89', tipo: 'vermelho' }
-            ]
-        },
-        '2025-03-25': {
-            type: 'future',
-            status: 'scheduled',
-            adversario: 'Time B',
-            estadio: 'Arena Principal',
-            horario: '16:00'
+    //COR DO MARCADOR
+
+    const getStatusColor = (resultado) => {
+        switch (resultado) {
+            case 'V': return '#4CAF50';
+            case 'D': return '#F44336';
+            case 'E': return '#FF9800';
+            default: return '#6cc3eb';
         }
     };
 
-    const renderEvento = (icone, label, valor) => (
-        <View style={styles.eventoContainer}>
-            <Text style={styles.icone}>{icone}</Text>
-            <Text style={styles.detalheTexto}>
-                <Text style={styles.label}>{label}:</Text> {valor}
-            </Text>
-        </View>
-    );
+    // Ao pressionar DATA
 
-    useEffect(() => {
-        setGames(initialGames);
-    }, []);
-
-    const getStatusColor = (date) => {
-        const game = games[date];
-        if (!game) return null;
-
-        if (game.type === 'past') return styles.resultColors[game.status];
-        if (game.type === 'future') return styles.resultColors.future;
-
-        return '#CCCCCC';
-    };
-
-    const handleDatePress = (day) => {
+    const handleDatePress = async (date) => {
         const today = new Date();
-        const selectedDate = new Date(day.dateString);
+        const selectedDate = new Date(date.dateString);
         const isFuture = selectedDate > today;
 
-        const existingGame = games[day.dateString] || {
-            type: isFuture ? 'future' : 'past',
-            status: isFuture ? 'scheduled' : 'pending',
-            adversario: '',
-            estadio: '',
-            horario: '',
-            gols: [],
-            cartoes: []
-        };
-
-        setCurrentGame(existingGame);
-        setSelectedDate(day.dateString);
-        setEditMode(!games[day.dateString] && !isFuture);
-        setModalVisible(true);
+        try {
+            const response = await axios.get(`/api/jogos?date=${date.dateString}`);
+            const existingGameData = response.data[0] || {
+                data: date.dateString,
+                resultado: isFuture ? 'agendado' : null,
+                adversario: '',
+                estadio: '',
+                horario: '',
+                gols: [],
+                cartoes: [],
+                type: isFuture ? 'future' : 'past'
+            };
+            setCurrentGame(existingGameData);
+            setSelectedDate(date.dateString);
+            setEditMode(!existingGameData.id && !isFuture);
+            setModalVisible(true);
+        } catch (error) {
+            console.error('Erro ao buscar jogo:', error);
+        }
     };
 
-    const handleSave = () => {
-        if (!currentGame.adversario || !currentGame.horario) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
+    const handleSave = async () => {
+        // Validação antes da requisição
+        const camposObrigatorios = !currentGame.adversario || !currentGame.horario;
+        const golsInvalidos = currentGame.gols.some(gol => !gol.jogador || !gol.minuto);
+        const cartoesInvalidos = currentGame.cartoes.some(cartao => !cartao.jogador || !cartao.minuto);
+
+        if (camposObrigatorios || golsInvalidos || cartoesInvalidos) {
+            Alert.alert('Erro', 'Preencha todos os campos obrigatórios!');
             return;
         }
 
-        setGames(prev => ({
-            ...prev,
-            [selectedDate]: currentGame
-        }));
-        setModalVisible(false);
-        setEditMode(false);
+        try {
+            const payload = {
+                data: selectedDate,
+                adversario: currentGame.adversario,
+                estadio: currentGame.estadio,
+                horario: currentGame.horario,
+                resultado: currentGame.resultado,
+                gols: currentGame.gols.map(gol => ({
+                    jogador_id: gol.jogador,
+                    assistencia_jogador_id: gol.assistencia,
+                    minuto: gol.minuto
+                })),
+                cartoes: currentGame.cartoes.map(cartao => ({
+                    jogador_id: cartao.jogador,
+                    tipo: cartao.tipo,
+                    minuto: cartao.minuto
+                }))
+            };
+
+            const method = currentGame.id ? 'put' : 'post';
+            const url = currentGame.id ? `/api/jogos/${currentGame.id}` : '/api/jogos';
+
+            const response = await axios[method](url, payload);
+
+            // Atualizar lista de jogos após salvar
+            const updatedGames = { ...games };
+            updatedGames[selectedDate] = {
+                ...payload,
+                marked: {
+                    selected: true,
+                    selectedColor: getStatusColor(payload.resultado),
+                    dotColor: '#FFF'
+                }
+            };
+            setGames(updatedGames);
+
+            setModalVisible(false);
+            setEditMode(false);
+        } catch (error) {
+            console.error('Erro ao salvar:', error.response?.data);
+            Alert.alert('Erro', error.response?.data?.message || 'Falha ao Salvar Jogo');
+        }
     };
 
+    //render formulario
+
     const renderDetails = () => (
-        <ScrollView>
+        <View style={styles.detailsContainer}>
+            <Text style={styles.detailTitle}>Detalhes do Jogo</Text>
 
-            {/* Informações básicas */}
-            <View style={styles.detailsContainer}>
-                {renderEvento('🆚', 'Adversário', currentGame.adversario)}
-                {renderEvento('🏟', 'Estádio', currentGame.estadio)}
-                {renderEvento('⏰', 'Horário', currentGame.horario)}
+            <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Adversário:</Text>
+                <Text style={styles.detailText}>{currentGame.adversario || 'Não informado'}</Text>
             </View>
 
-            {/* Gols */}
-            <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>⚽ Gols</Text>
-                {currentGame.gols?.map((gol, index) => (
-                    <View key={index} style={styles.eventoContainer}>
-                        <Text style={styles.detalheTexto}>
-                            {gol.jogador} ({gol.minuto}')
-                            <Text style={styles.assistencia}> [🎯 {gol.assistencia}]</Text>
-                        </Text>
-                    </View>
-                ))}
+            <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Estádio:</Text>
+                <Text style={styles.detailText}>{currentGame.estadio || 'Não informado'}</Text>
             </View>
 
-            {/* Cartões */}
-            <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>🟨🟥 Cartões</Text>
-                {currentGame.cartoes?.map((cartao, index) => (
-                    <View key={index} style={styles.eventoContainer}>
-                        <Text style={styles.detalheTexto}>
-                            {cartao.tipo === 'amarelo' ? '🟨' : '🟥'}
-                            {cartao.jogador} ({cartao.minuto}')
-                        </Text>
-                    </View>
-                ))}
+            <View style={styles.detailItem}>
+                <Text style={styles.detailLabel}>Horário:</Text>
+                <Text style={styles.detailText}>{currentGame.horario || 'Não informado'}</Text>
             </View>
 
-            <View style={styles.buttonContainer}>
-                {currentGame.type === 'past' && (
-                    <TouchableOpacity
-                        style={[styles.button, styles.editButton]}
-                        onPress={() => setEditMode(true)}
-                    >
-                        <Text style={styles.buttonText}>Editar</Text>
-                    </TouchableOpacity>
-                )}
+            {currentGame.type === 'past' && (
+                <View style={styles.detailItem}>
+                    <Text style={styles.detailLabel}>Resultado:</Text>
+                    <Text style={styles.detailText}>
+                        {currentGame.resultado === 'V' && 'Vitória'}
+                        {currentGame.resultado === 'D' && 'Derrota'}
+                        {currentGame.resultado === 'E' && 'Empate'}
+                    </Text>
+                </View>
+            )}
 
-                <TouchableOpacity
-                    style={[styles.button, styles.deleteButton]}
-                    onPress={() => setModalVisible(false)}
-                >
-                    <Text style={styles.buttonText}>Fechar</Text>
-                </TouchableOpacity>
-            </View>
-        </ScrollView>
+            <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => setEditMode(true)}
+            >
+                <Text style={styles.buttonText}>Editar</Text>
+            </TouchableOpacity>
+        </View>
     );
 
     const renderGolForm = (index) => {
-        if (!currentGame.gols?.[index]) return null;
         return (
-            <View style={styles.inputGroup}>
-                <TextInput
-                    style={styles.input}
-                    placeholder="Jogador"
-                    value={currentGame.gols[index].jogador || ''}
-                    onChangeText={text => {
+            <View style={styles.inputGroup} key={`gol-${index}`}>
+                <Picker
+                    selectedValue={currentGame.gols[index]?.jogador}
+                    onValueChange={text => {
                         const newGols = [...currentGame.gols];
                         newGols[index] = { ...newGols[index], jogador: text };
                         setCurrentGame({ ...currentGame, gols: newGols });
                     }}
-                />
+                >
+                    <Picker.Item label="Jogador" value="" />
+                    {jogadores.map(j => (
+                        <Picker.Item key={j.id} label={j.nome} value={j.id} />
+                    ))}
+                </Picker>
+
                 <TextInput
-                    style={styles.input}
                     placeholder="Minuto"
-                    value={currentGame.gols[index].minuto || ''}
+                    value={currentGame.gols[index]?.minuto || ''}
                     onChangeText={text => {
                         const newGols = [...currentGame.gols];
                         newGols[index] = { ...newGols[index], minuto: text };
                         setCurrentGame({ ...currentGame, gols: newGols });
                     }}
                 />
-                <TextInput
-                    style={styles.input}
+
+                <Picker
                     placeholder="Assistência"
-                    value={currentGame.gols[index].assistencia || ''}
-                    onChangeText={text => {
+                    selectedValue={currentGame.gols[index]?.assistencia}
+                    onValueChange={text => {
                         const newGols = [...currentGame.gols];
                         newGols[index] = { ...newGols[index], assistencia: text };
                         setCurrentGame({ ...currentGame, gols: newGols });
                     }}
-                />
-            </View>
+                >
+                    <Picker.Item label="Assistência" value="" />
+                    {jogadores.map(j => (
+                        <Picker.Item key={j.id} label={j.nome} value={j.id} />
+                    ))}
+                </Picker>
+            </View >
         );
     };
-    
+
     const renderEditForm = () => (
         <ScrollView>
             <View style={styles.detailsContainer}>
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => {
+                        Alert.prompt(
+                            'Cadastrar Jogador',
+                            'Digite o nome:',
+                            (nome) => {
+                                if (nome) {
+                                    axios.post('/api/jogadores', { nome, posicao: 'Não definida' })
+                                        .then(response => {
+                                            setJogadores([...jogadores, response.data]);
+                                        });
+                                }
+                            }
+                        );
+                    }}
+                >
+                    <Text>+ Novo Jogador</Text>
+                </TouchableOpacity>
                 <TextInput
                     style={styles.input}
                     placeholder="Adversário"
@@ -260,17 +272,14 @@ const Calendario = () => {
                 {currentGame?.type === 'past' && (
                     <View style={styles.pickerContainer}>
                         <Picker
-                            selectedValue={currentGame?.status}
-                            onValueChange={value => setCurrentGame(prev => ({
-                                ...prev,
-                                status: value
-                            }))}
+                            selectedValue={currentGame.resultado || 'V'}
+                            onValueChange={value => setCurrentGame(prev => ({ ...prev, resultado: value }))}
                             style={styles.picker}
                             dropdownIconColor="#FFD700"
                         >
-                            <Picker.Item label="Vitória" value="win" />
-                            <Picker.Item label="Derrota" value="loss" />
-                            <Picker.Item label="Empate" value="draw" />
+                            <Picker.Item label="Vitória" value="V" />
+                            <Picker.Item label="Derrota" value="D" />
+                            <Picker.Item label="Empate" value="E" />
                         </Picker>
                     </View>
                 )}
@@ -280,7 +289,27 @@ const Calendario = () => {
             <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>⚽ Gols</Text>
                 {currentGame.gols?.map((_, index) => renderGolForm(index))}
-
+                <TouchableOpacity
+                    style={styles.addButton}
+                    onPress={() => {
+                        // Abrir modal de cadastro rápido
+                        Alert.prompt(
+                            'Cadastrar Jogador',
+                            'Digite o nome do jogador:',
+                            (nome) => {
+                                if (nome) {
+                                    axios.post('/api/jogadores', { nome, posicao: 'Não definida' })
+                                        .then(response => {
+                                            setJogadores([...jogadores, response.data]);
+                                        })
+                                        .catch(error => Alert.alert('Erro', 'Falha ao cadastrar jogador'));
+                                }
+                            }
+                        );
+                    }}
+                >
+                    <Text style={styles.buttonText}>+ Cadastrar Novo Jogador</Text>
+                </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => setCurrentGame(prev => ({
@@ -295,16 +324,15 @@ const Calendario = () => {
             {/* Seção de Cartões (implementação similar) */}
 
             <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>🟨🟥 Cartões</Text>
-                {currentGame.cartoes?.map((_, index) => renderGolForm(index))}
+                <Text style={styles.sectionTitle}>Cartões 🟨🟥</Text>
+                {currentGame.cartoes?.map((_, index) => renderCartaoForm(index))}
 
                 <TouchableOpacity
                     style={styles.addButton}
                     onPress={() => setCurrentGame(prev => ({
                         ...prev,
                         cartoes: [...prev.cartoes, { jogador: '', minuto: '' }]
-                    }))}
-                >
+                    }))}>
                     <Text style={styles.buttonText}>+ Adicionar Cartão</Text>
                 </TouchableOpacity>
             </View>
@@ -324,29 +352,78 @@ const Calendario = () => {
                     <Text style={styles.buttonText}>Cancelar</Text>
                 </TouchableOpacity>
             </View>
-        </ScrollView>
+        </ScrollView >
     );
+
+    // Buscar jogadores
+    useEffect(() => {
+        const fetchJogadores = async () => {
+            try {
+                const response = await axios.get('/api/jogadores');
+                setJogadores(response.data);
+            } catch (error) {
+                console.error('Erro ao buscar jogadores:', error);
+            }
+        };
+        fetchJogadores();
+    }, []);
+
+    // Novo componente para cartões
+    const renderCartaoForm = (index) => {
+        return (
+            <View style={styles.inputGroup} key={`cartao-${index}`}>
+                <Picker
+                    selectedValue={currentGame.cartoes[index]?.jogador}
+                    onValueChange={text => {
+                        const newCartoes = [...currentGame.cartoes];
+                        newCartoes[index] = { ...newCartoes[index], jogador: text };
+                        setCurrentGame({ ...currentGame, cartoes: newCartoes });
+                    }}>
+                    <Picker.Item label="Selecione o jogador" value="" />
+                    {jogadores.map(j => (
+                        <Picker.Item key={j.id} label={j.nome} value={j.id} />
+                    ))}
+                </Picker>
+
+                <TextInput
+                    placeholder="Minuto"
+                    value={currentGame.cartoes[index]?.minuto || ''}
+                    onChangeText={text => {
+                        const newCartoes = [...currentGame.cartoes];
+                        newCartoes[index] = { ...newCartoes[index], minuto: text };
+                        setCurrentGame({ ...currentGame, cartoes: newCartoes });
+                    }}
+                />
+            </View>
+        );
+    };
     return (
         <SafeAreaView style={styles.container}>
             <Calendar
                 theme={styles.calendarTheme}
-                markedDates={Object.keys(games).reduce((acc, date) => ({
-                    ...acc,
-                    [date]: {
-                        selected: true,
-                        selectedColor: getStatusColor(date),
-                        dotColor: '#FFFFFF'
-                    }
-                }), {})}
+                markedDates={games}
                 onDayPress={handleDatePress}
             />
+            {modalVisible && currentGame && (
+                <Modal
+                    visible={modalVisible}
+                    animationType="slide"
+                    onRequestClose={() => setModalVisible(false)}
+                >
+                    <View style={styles.modalContainer}>
+                        <TouchableOpacity
+                            style={styles.closeButton}
+                            onPress={() => setModalVisible(false)}
+                        >
+                            <Text style={styles.closeText}>×</Text>
+                        </TouchableOpacity>
 
-            <Modal visible={modalVisible} animationType="slide">
-                <View style={styles.modalContainer}>
-                    {editMode ? renderEditForm() : renderDetails()}
-                </View>
-            </Modal>
-        </SafeAreaView>
+                        {editMode ? renderEditForm() : renderDetails()}
+                    </View>
+                </Modal>
+            )}
+
+        </SafeAreaView >
     );
 };
 

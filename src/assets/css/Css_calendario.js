@@ -16,9 +16,9 @@ export const calendar_styles = StyleSheet.create({
         textDisabledColor: '#2A2A2A'
     },
     resultColors: {
-        win: '#28A745',
-        loss: '#DC3545',
-        draw: '#FFA500',
+        win: '#4CAF50',
+        loss: '#F44336',
+        draw: '#FF9800',
         future: '#17A2B8'
     },
     modalContainer: {
@@ -33,6 +33,7 @@ export const calendar_styles = StyleSheet.create({
         marginBottom: 15
     },
     detailText: {
+        flex: 1,
         color: '#FFFFFF',
         fontSize: 16,
         marginVertical: 5
@@ -57,7 +58,11 @@ export const calendar_styles = StyleSheet.create({
         marginHorizontal: 5
     },
     editButton: {
-        backgroundColor: '#FFD700'
+        backgroundColor: '#4CAF50',
+        padding: 10,
+        borderRadius: 5,
+        marginTop: 20,
+        alignItems: 'center'
     },
     saveButton: {
         backgroundColor: '#28A745'
@@ -76,7 +81,8 @@ export const calendar_styles = StyleSheet.create({
     },
     picker: {
         color: '#FFFFFF',
-        backgroundColor: '#1A1A1A',
+        backgroundColor: '#f5f5f5',
+        borderRadius: 8,
     },
     pickerItem: {
         color: '#FFFFFF',
@@ -120,7 +126,9 @@ export const calendar_styles = StyleSheet.create({
         marginVertical: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#3A3A3A',
-        paddingBottom: 15
+        paddingBottom: 15,
+        marginBottom: 15,
+        gap: 8
     },
     addButton: {
         backgroundColor: '#28A745',
@@ -128,5 +136,22 @@ export const calendar_styles = StyleSheet.create({
         borderRadius: 8,
         marginTop: 10,
         alignItems: 'center'
-    }
+    },
+    detailContainer: {
+        padding: 20,
+    },
+    detailTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        textAlign: 'center'
+    },
+    detailItem: {
+        flexDirection: 'row',
+        marginBottom: 10,
+    },
+    detailLabel: {
+        fontWeight: 'bold',
+        width: 100,
+    },
 });

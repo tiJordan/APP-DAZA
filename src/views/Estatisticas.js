@@ -1,56 +1,89 @@
 // Estatisticas.js
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, SafeAreaView, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Modal, SafeAreaView, StatusBar, ActivityIndicator } from 'react-native';
 import { stats_styles } from '../assets/css/Css_estatisticas';
+import PropTypes from 'prop-types';
+import axios from 'axios';
+axios.defaults.baseURL = 'http://192.168.0.141:3008';
 
 const Estatisticas = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalData, setModalData] = useState([]);
+    const [gamesData, setGamesData] = useState([]);
 
-    // Dados mockados atualizados
-    const temporada = {
-        vitorias: [
-            { adversario: 'Time A', resultado: '3-1', data: '10/06', status: 'V' },
-            { adversario: 'Time B', resultado: '2-0', data: '07/06', status: 'V' }
-        ],
-        derrotas: [
-            { adversario: 'Time C', resultado: '0-1', data: '04/06', status: 'D' }
-        ],
-        empates: [
-            { adversario: 'Time D', resultado: '2-2', data: '01/06', status: 'E' }
-        ],
-        jogos: [
-            { adversario: 'Time A', resultado: '3-1', data: '10/06', status: 'V' },
-            { adversario: 'Time B', resultado: '2-2', data: '07/06', status: 'E' },
-            { adversario: 'Time C', resultado: '0-1', data: '04/06', status: 'D' },
-            { adversario: 'Time D', resultado: '1-0', data: '01/06', status: 'V' }
-        ],
-        artilharia: [
-            { jogador: 'C. Ronaldo', gols: 15 },
-            { jogador: 'L. Messi', gols: 12 }
-        ],
-        assistencias: [
-            { jogador: 'K. De Bruyne', assist: 10 },
-            { jogador: 'T. Kroos', assist: 8 }
-        ],
-        cartoesAmarelos: 12,
-        cartoesVermelhos: 2
+    const [stats, setStats] = useState({
+        vitorias: 0,
+        derrotas: 0,
+        empates: 0,
+        jogosDisputados: 0,
+        artilharia: [],
+        assistencias: [],
+        cartoesAmarelos: 0,
+        cartoesVermelhos: 0,
+        carregando: true // 👈 Novo estado de loading
+    });
+
+    Estatisticas.propTypes = {
+        stats: PropTypes.shape({
+            vitorias: PropTypes.number,
+            derrotas: PropTypes.number,
+            empates: PropTypes.number,
+            artilharia: PropTypes.array,
+            assistencias: PropTypes.array,
+            cartoesAmarelos: PropTypes.number,
+            cartoesVermelhos: PropTypes.number,
+            carregando: PropTypes.bool
+        })
     };
 
-    const stats = [
-        { title: 'Vitórias', value: temporada.vitorias.length, data: temporada.vitorias },
-        { title: 'Derrotas', value: temporada.derrotas.length, data: temporada.derrotas },
-        { title: 'Empates', value: temporada.empates.length, data: temporada.empates },
-        { title: 'Jogos Disputados', value: temporada.jogos.length, data: temporada.jogos },
-        { title: 'Artilheiros', value: temporada.artilharia[0].gols, data: temporada.artilharia },
-        { title: 'Assistências', value: temporada.assistencias[0].assist, data: temporada.assistencias },
-        { title: 'Cartões Amarelos', value: temporada.cartoesAmarelos, data: [] },
-        { title: 'Cartões Vermelhos', value: temporada.cartoesVermelhos, data: [] },
-    ];
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                console.log('Iniciando busca de Estatísticas...');
+                const [gamesRes, playersRes] = await Promise.all([
+                    axios.get('/api/jogos'),
+                    axios.get('/api/jogadores/estatisticas')
+                ]);
+
+                const gamesData = gamesRes.data;
+                const playersData = playersRes.data;
+                const games = gamesRes.data || [];
+
+                console.log('Resposta Jogos:', gamesRes.data); // 👈 Novo log
+                console.log('Resposta Jogadores:', playersRes.data); // 👈 Novo log
+
+                setGamesData(games);
+                // Calcular estatísticas
+                const newStats = {
+                    vitorias: gamesData.filter(g => g.resultado === 'V').length,
+                    derrotas: gamesData.filter(g => g.resultado === 'D').length,
+                    empates: gamesData.filter(g => g.resultado === 'E').length,
+                    jogosDisputados: gamesData.length,
+                    artilharia: (playersData || []).sort((a, b) => (b.total_gols || 0) - (a.total_gols || 0)).slice(0, 5),
+                    assistencias: (playersData || []).sort((a, b) => (b.total_assistencias || 0) - (a.total_assistencias || 0)).slice(0, 5),
+                    cartoesAmarelos: (playersData || []).reduce((acc, curr) => acc + (curr.cartoes_amarelos || 0), 0),
+                    cartoesVermelhos: (playersData || []).reduce((acc, curr) => acc + (curr.cartoes_vermelhos || 0), 0),
+                    carregando: false
+                };
+
+                setStats(newStats);
+
+            } catch (error) {
+                console.error('Erro completo: ', error);
+                console.log('Config da requisição:', error.config);
+                if (error.response) {
+                    console.log('Resposta do erro: ', error.response.data);
+                }
+                setStats(prev => ({ ...prev, carregando: false }));
+            }
+        };
+
+        fetchData();
+    }, []);
 
     // Função para renderizar a tabela de últimos jogos
-    const renderUltimosJogos = () => (
+    const renderUltimosJogos = (jogos) => (
         <View style={stats_styles.tabelaContainer}>
             <Text style={stats_styles.tituloSecao}>Últimos Jogos</Text>
             <View style={stats_styles.tabelaHeader}>
@@ -59,27 +92,61 @@ const Estatisticas = () => {
                 <Text style={stats_styles.headerCell}>Data</Text>
             </View>
 
-            {temporada.jogos.slice(0, 5).map((jogo, index) => (
+            {(jogos || []).slice(0, 5).map((jogo, index) => ( // 👈 Adicione fallback
                 <View key={index} style={stats_styles.tabelaLinha}>
                     <Text style={stats_styles.cell}>{jogo.adversario}</Text>
                     <Text style={[
                         stats_styles.cell,
-                        jogo.status === 'V' && stats_styles.resultWin,
-                        jogo.status === 'D' && stats_styles.resultLoss,
-                        jogo.status === 'E' && stats_styles.resultDraw
+                        jogo.resultado === 'V' && stats_styles.resultWin,
+                        jogo.resultado === 'D' && stats_styles.resultLoss,
+                        jogo.resultado === 'E' && stats_styles.resultDraw
                     ]}>
                         {jogo.resultado}
                     </Text>
-                    <Text style={stats_styles.cell}>{jogo.data}</Text>
+                    <Text style={stats_styles.cell}>
+                        {new Date(jogo.data).toLocaleDateString('pt-BR')} {/* 👈 Formate a data */}
+                    </Text>
                 </View>
             ))}
         </View>
     );
 
-    const handleGridPress = (stat) => {
-        if (stat.data.length > 0) {
-            setModalTitle(stat.title);
-            setModalData(stat.data);
+    const handleGridPress = (statTitle) => {
+        let data = [];
+
+        switch (statTitle) {
+            case 'Jogos Disputados':
+                data = gamesData;
+                break;
+            case 'Vitórias':
+                data = gamesData.filter(jogo => jogo.resultado === 'V');
+                break;
+            case 'Derrotas':
+                data = gamesData.filter(jogo => jogo.resultado === 'D');
+                break;
+            case 'Empates':
+                data = gamesData.filter(jogo => jogo.resultado === 'E');
+                break;
+            default:
+                data = [];
+            case 'Artilheiros':
+                data = stats.artilharia;
+                break;
+            case 'Assistências':
+                data = stats.assistencias;
+                break;
+            case 'Cartões Amarelos':
+                data = stats.cartoesAmarelos;
+                break;
+            case 'Cartões Vermelhos':
+                data = stats.cartoesVermelhos;
+                break;
+            // ... Adicione casos para outras estatísticas
+        }
+
+        if (data.length > 0) {
+            setModalTitle(statTitle);
+            setModalData(data);
             setModalVisible(true);
         }
     };
@@ -110,9 +177,9 @@ const Estatisticas = () => {
 
                         {(isArtilheiro || isAssistencia) && (
                             <>
-                                <Text style={stats_styles.modalText}>{item.jogador}</Text>
+                                <Text style={stats_styles.modalText}>{item.jogador || 'Sem nome'}</Text>
                                 <Text style={stats_styles.modalValue}>
-                                    {isArtilheiro ? `${item.gols} gols` : `${item.assist} assistências`}
+                                    {isArtilheiro ? `${item.gols} gols` : `${item.assist} assistências` || 0}
                                 </Text>
                             </>
                         )}
@@ -131,19 +198,33 @@ const Estatisticas = () => {
 
                 {/* Grid Principal */}
                 <View style={stats_styles.gridContainer}>
-                    {stats.map((stat, index) => (
-                        <TouchableOpacity
-                            key={index}
-                            style={stats_styles.gridItem}
-                            onPress={() => handleGridPress(stat)}
-                            disabled={stat.data.length === 0}
-                        >
-                            <Text style={stats_styles.gridValue}>{stat.value}</Text>
-                            <Text style={stats_styles.gridTitle}>{stat.title}</Text>
-                        </TouchableOpacity>
-                    ))}
+                    {!stats.carregando && (
+                        <>
+                            <View style={stats_styles.gridContainer}>
+                                {/* Vitórias */}
+                                <TouchableOpacity style={stats_styles.gridItem} onPress={() => handleGridPress('Vitórias', stats.vitorias)}>
+                                    <Text style={stats_styles.gridValue}>{stats.vitorias}</Text>
+                                    <Text style={stats_styles.gridTitle}>Vitórias</Text>
+                                </TouchableOpacity>
+
+                                {/* Derrotas */}
+                                <TouchableOpacity style={stats_styles.gridItem} onPress={() => handleGridPress('Derrotas', stats.derrotas)}>
+                                    <Text style={stats_styles.gridValue}>{stats.derrotas}</Text>
+                                    <Text style={stats_styles.gridTitle}>Derrotas</Text>
+                                </TouchableOpacity>
+
+                                {/* ... Repita para outras estatísticas seguindo o mesmo padrão ... */}
+                            </View>
+
+                            {renderUltimosJogos(gamesData)}
+                        </>
+                    )}
+
+                    {stats.carregando && (
+                        <ActivityIndicator size="large" color="#1A2D5A" style={{ marginTop: 20 }} />
+                    )}
                 </View>
-                {renderUltimosJogos()}
+                {renderUltimosJogos(gamesData)}
                 {/* Modal */}
                 <Modal
                     visible={modalVisible}

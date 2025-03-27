@@ -20,7 +20,7 @@ export const loginStyles = StyleSheet.create({
     titulo: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#1A2D5A',
+        color: '#000000',
         textAlign: 'center',
         marginVertical: 20,
     },
@@ -37,9 +37,12 @@ export const loginStyles = StyleSheet.create({
     },
     label: {
         fontSize: 16,
-        color: '#1A2D5A',
+        color: '#333',
         marginBottom: 8,
         fontWeight: '500',
+        //  paddingVertical: 8,
+        //  width: '100%',
+
     },
     input: {
         height: 50,
@@ -50,6 +53,8 @@ export const loginStyles = StyleSheet.create({
         paddingHorizontal: 15,
         fontSize: 16,
         backgroundColor: 'white',
+        zIndex: 999,
+
     },
     inputFocado: {
         borderColor: '#FFD700',
@@ -75,6 +80,13 @@ export const loginStyles = StyleSheet.create({
                 elevation: 3,
             },
         }),
+        backgroundColor: '#1A2D5A',
+        borderRadius: 25,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 5,
     },
     textoBotao: {
         color: 'white',
@@ -88,7 +100,7 @@ export const loginStyles = StyleSheet.create({
         marginRight: 40,
     },
     linkTexto: {
-        color: '#1A2D5A',
+        color: '#000000',
         fontSize: 16,
         fontWeight: '600',
         letterSpacing: 0.3,
@@ -105,6 +117,29 @@ export const loginStyles = StyleSheet.create({
                 borderBottomWidth: 1.5,
                 borderBottomColor: '#1A2D5A',
                 paddingBottom: 2,
+            },
+        })
+    },
+    linkTextoCadastro:
+    {
+        color: '#000000',
+        fontSize: 16,
+        fontWeight: '600',
+        letterSpacing: 0.3,
+        marginLeft: 70,
+        textDecorationLine: 'none',
+        fontFamily: 'Inter-SemiBold',
+        ...Platform.select({
+            ios: {
+                textDecorationLine: 'underline',
+                textDecorationStyle: 'solid',
+                textDecorationColor: '#000000',
+            },
+            android: {
+                borderBottomWidth: 1.5,
+                borderBottomColor: '#000000',
+                paddingBottom: 2,
+                textAlign: "center"
             },
         }),
     },

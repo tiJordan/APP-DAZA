@@ -9,7 +9,7 @@ export const player_styles = StyleSheet.create({
     titulo: {
         fontSize: 28,
         fontWeight: 'bold',
-        color: '#ffffff',
+        color: '#FFFFFF',
         marginBottom: 25,
         marginTop: 15,
         textAlign: 'center',
@@ -43,21 +43,24 @@ export const player_styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '700',
         color: '#FFD700',
-        marginBottom: 5
+        marginBottom: 5,
+        zIndex: 1,
     },
     playerPosition: {
         fontSize: 14,
-        color: '#FFFFFF',
-        opacity: 0.8
+        color: '#FFD700',
+        opacity: 0.8,
     },
     playerStats: {
         flexDirection: 'row',
-        gap: 20
+        gap: 20,
+        color: '#FFD700',
     },
     statItem: {
         fontSize: 16,
-        color: '#FFFFFF',
-        fontWeight: '600'
+        color: '#FFD700',
+        fontWeight: '600',
+        // zIndex:999,
     },
     addButton: {
         position: 'absolute',
@@ -89,7 +92,7 @@ export const player_styles = StyleSheet.create({
     modalTitle: {
         fontSize: 24,
         fontWeight: 'bold',
-        color: '#000',
+        color: '#b4b4d1',
         marginBottom: 25,
         textAlign: 'center',
         borderBottomWidth: 2,
@@ -188,6 +191,37 @@ export const player_styles = StyleSheet.create({
     editButton: {
         backgroundColor: '#FFD700',
         borderColor: '#000000'
+    },
+    positionButton: {
+        padding: 10,
+        backgroundColor: '#e0e0e0',
+        borderRadius: 8,
+        minWidth: 100,
+        alignItems: 'center',
+    },
+    selectedPosition: {
+        backgroundColor: '#4CAF50',
+    },
+    positionOptions: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 8,
+    },
+    warningText: {
+        color: '#FF9800',
+        fontSize: 12,
+        marginTop: 4,
+
+    },
+    refreshButton: {
+        position: 'absolute',
+        right: 20,
+        top: 20,
+        zIndex: 999,
+        backgroundColor: '#FFD700', // Novo
+        padding: 8, // Novo
+        borderRadius: 20, // Novo
     },
 
 });

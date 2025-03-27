@@ -10,4 +10,6 @@ config.resolver.assetExts.push(
     'svg'
 );
 
+config.resolver.blockList = [/(.*.spec.ts?)$/]
+
 module.exports = config;
